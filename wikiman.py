@@ -1,23 +1,15 @@
 #!env python
+'''like this...'''
 import getopt
 import sys
 
 options = getopt.getopt(sys.argv[1:],
-                        'hu:iI',
-                        ['help', 'head', 'user='])
-include_header = 0
-header_only = 0
-username, password = None, ''
+                        'h',
+                        ['help'])
 for option, value in options[0]:
     if option in ('-h', '--help'):
         print __doc__
         sys.exit(0)
-    elif option == '-i':
-        include_header = 1
-    elif option in ('-I', '--head'):
-        header_only = 1
-    elif option in ('-u', '--user'):
-        username, password = value.split(':', 2)
 
 import urllib2 as u
 terms = options[-1]
@@ -27,8 +19,6 @@ for term in terms:
     # print query
     try:
         f = u.urlopen(req)
-#        if include_header or header_only: print f.headers
-#        if not header_only: print f.read()
         import json
         j = json.loads(f.read())
         pages = j['query']['pages']

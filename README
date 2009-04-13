@@ -1,0 +1,4 @@
+ python wikiman.py ls | nroff -man | less
+
+David A. Shamma
+(cc) 

@@ -1,6 +1,9 @@
+Grab a wikipedia page and display it as a manpage.  This app currently adds "_(Unix)" to disambiguate the *nix command in the wikipedia.  Wiki formatting is converted to nroff manpage format which can be seen as a manpage via:
+
 % python wikiman.py ls | nroff -man | less
 
-you will need python 2.6 for the JSON to work
+You will need python 2.6 for the JSON to work
 
 David A. Shamma
-(cc) 
+M. Cameron Jones
+(cc) Free to Use, Reuse, Remix, and Enjoy Chilled.

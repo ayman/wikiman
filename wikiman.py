@@ -1,43 +1,65 @@
 #!env python
-'''like this...'''
-import getopt
-import sys
+'''Which wikipedia page do you want?
+Fetch Wikipages on Unix commands like man pages like:
+% python wikiman.py <COMMAND> | nroff -man | less
+'''
 
-options = getopt.getopt(sys.argv[1:],
-                        'h',
-                        ['help'])
-for option, value in options[0]:
-    if option in ('-h', '--help'):
-        print __doc__
-        sys.exit(0)
-
-import urllib2 as u
-terms = options[-1]
-for term in terms:
-    query = "http://en.wikipedia.org/w/api.php?action=query&titles="+ term + "+(Unix)&redirects&format=json&prop=revisions&rvprop=timestamp|content"
-    req = u.Request(query)
-    # print query
-    try:
-        f = u.urlopen(req)
+class WikiMan:
+    '''Get a term, query it from the wikipedia, and nroff it.'''
+    def __init__(self, term, raw = False): 
+        self.term = term
+        self.raw = raw
+        query = self.makeQuery(self.term, self.raw)
+        import urllib2
+        req = urllib2.Request(query)
+        try:
+            f = urllib2.urlopen(req)
+        except Exception, e:
+            print e.read()
         import json
         j = json.loads(f.read())
         pages = j['query']['pages']
         k = pages.keys()[0]
         page = pages[k]
-        title = page['title']
-        timestamp = page['revisions'][0]['timestamp']
-        content = page['revisions'][0]['*']
-        content = content.encode('ascii', 'ignore')
-        ## todo try catch these into a loop so we can handle errors
+        self.title = page['title'].replace(" ", "_")
+        self.timestamp = page['revisions'][0]['timestamp']
+        body = page['revisions'][0]['*']
+        self.content = self.wiki2nroff(body)
+        self.wikilink = "http://en.wikipedia.org/wiki/"
+        self.wikilink += self.title.replace(" ", "_")
+        ## print it!
+        print ".TH " + self.title + " 0 " + self.timestamp
+        print ".SH NAME"
+        print self.title
+        print ".SH SYNOPSIS"
+        print self.content
+        print ".SH SEE ALSO"
+        print self.wikilink
+
+    def makeQuery(self, term, raw):
+        query = "http://en.wikipedia.org/w/api.php"
+        query += "?action=query&titles="
+        query += term
+        if (raw is False):
+            query += "+(Unix)"
+        query += "&redirects&format=json"
+        query += "&prop=revisions&rvprop=timestamp|content"
+        return query
+
+    def wiki2nroff(self, wikiText):
+        # ascii encode - very important
+        content = wikiText.encode('ascii', 'ignore')
+        # kill the wiki links footer
         content = content.split('== See also ==')[0]
-        # content = content.replace('[[', '\n.B "')
-        # content = content.replace(']]', '"')
-        # content = content.replace('<code>', '\n.I "')
-        # content = content.replace('</code>', '"\n')
-        content = content.replace('[[', '')
-        content = content.replace(']]', '')
-        content = content.replace('<code>', '')
-        content = content.replace('</code>', '')
+        ## todo: try catch these into a loop so we can handle
+        ## errors
+        ## todo: add list support
+        content = content.replace('[[', '\\fB')
+        content = content.replace(']]', '\\fR')
+        content = content.replace('<code>', '\\fI')
+        content = content.replace('</code>', '\\fR')
+        content = content.replace(' : ', '\n')
+        content = content.replace('\n; ', '\n.IP ')
         content = content.replace('<tt>', '')
         content = content.replace('</tt>', '')
         content = content.replace('==\n', '\n')
@@ -47,18 +69,35 @@ for term in terms:
         content = content.replace('<!--', '')
         content = content.replace('-->', '')
         content = content.replace('&mdash;', '::')
+        ## todo: regex {{*}}
         content = content.replace('{{lowercase}}', '')
+        ## lazy upcase 
         content = content.replace('.SH Examples', '.SH EXAMPLES')
         content = content.replace('.SH Syntax', '.SH SYNTAX')
-        # content = content.encode('\n', '.p')
-        wikititle = "http://en.wikipedia.org/wiki/"
-        wikititle += title.replace(" ", "_")
-        print ".TH " + title + " 0 " + timestamp
-        print ".SH NAME"
-        print title
-        print ".SH SYNOPSIS"
-        print content
-        print ".SH SEE ALSO"
-        print wikititle
-    except Exception, e:
-        print e.read()
+        return content
+
+def main():
+    import getopt
+    import sys
+    options = getopt.getopt(sys.argv[1:],
+                            'h, r',
+                            ['help', 'raw'])
+    raw = False
+    if len(options[-1]) is 0:
+        print "Which wikipedia page do you want?"
+        sys.exit(0)
+    for option, value in options[0]:
+        if option in ('-h', '--help'):
+            if (len(options[-1]) is 0):
+                print "Which wikipedia page do you want?"
+            else:
+                print __doc__
+            sys.exit(0)
+        elif option in ('-r', '--raw'):
+            raw = True
+    term = options[-1][0]
+    WikiMan(term, raw)    
+
+if __name__ == "__main__":
+    main()
+

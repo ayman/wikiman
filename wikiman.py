@@ -27,14 +27,6 @@ class WikiMan:
         self.content = self.wiki2nroff(body)
         self.wikilink = "http://en.wikipedia.org/wiki/"
         self.wikilink += self.title.replace(" ", "_")
-        ## print it!
-        print ".TH " + self.title + " 0 " + self.timestamp
-        print ".SH NAME"
-        print self.title
-        print ".SH SYNOPSIS"
-        print self.content
-        print ".SH SEE ALSO"
-        print self.wikilink
 
     def makeQuery(self, term, raw):
         query = "http://en.wikipedia.org/w/api.php"
@@ -76,6 +68,17 @@ class WikiMan:
         content = content.replace('.SH Syntax', '.SH SYNTAX')
         return content
 
+    def getManPage(self):
+        ## print it!
+        page = ".TH " + self.title + " 0 " + self.timestamp
+        page += "\n.SH NAME\n"
+        page += self.title
+        page += "\n.SH SYNOPSIS\n"
+        page += self.content
+        page + "\n.SH SEE ALSO\n"
+        page += self.wikilink
+        return page
+
 def main():
     import getopt
     import sys
@@ -96,7 +99,8 @@ def main():
         elif option in ('-r', '--raw'):
             raw = True
     term = options[-1][0]
-    WikiMan(term, raw)    
+    app = WikiMan(term, raw)
+    print app.getManPage()
 
 if __name__ == "__main__":
     main()

@@ -43,24 +43,25 @@ class WikiMan:
         content = wikiText.encode('ascii', 'ignore')
         # kill the wiki links footer
         content = content.split('== See also ==')[0]
-        ## todo: try catch these into a loop so we can handle
-        ## errors
-        ## todo: add list support
-        content = content.replace('[[', '\\fB')
-        content = content.replace(']]', '\\fR')
-        content = content.replace('<code>', '\\fI')
-        content = content.replace('</code>', '\\fR')
-        content = content.replace(' : ', '\n')
-        content = content.replace('\n; ', '\n.IP ')
-        content = content.replace('<tt>', '')
-        content = content.replace('</tt>', '')
-        content = content.replace('==\n', '\n')
-        content = content.replace('\n==', '\n.SH ')
-        content = content.replace('==', '\n')
-        content = content.replace('\'\'\'', '"')
-        content = content.replace('<!--', '')
-        content = content.replace('-->', '')
-        content = content.replace('&mdash;', '::')
+        content = content.split('==See also==')[0]
+        # replace wiki codes for nroff codes
+        codes = { '[[' : '\\fB',
+                  ']]' : '\\fR',
+                  '<code>' : '\\fI',
+                  '</code>' : '\\fR',
+                  ' : ' : '\n',
+                  '\n; ' : '\n.IP ',
+                  '<tt>' : '',
+                  '</tt>' : '',
+                  '==\n' : '\n',
+                  '\n==' : '\n.SH ',
+                  '==' : '\n',
+                  '\'\'\'' : '"',
+                  '<!--' : '',
+                  '-->' : '',
+                  '&mdash;' : '::' }        
+        for k, v in codes.iteritems():
+            content = content.replace(k, v)
         ## todo: regex {{*}}
         content = content.replace('{{lowercase}}', '')
         ## lazy upcase 
@@ -69,13 +70,12 @@ class WikiMan:
         return content
 
     def getManPage(self):
-        ## print it!
         page = ".TH " + self.title + " 0 " + self.timestamp
         page += "\n.SH NAME\n"
         page += self.title
         page += "\n.SH SYNOPSIS\n"
         page += self.content
-        page + "\n.SH SEE ALSO\n"
+        page += "\n.SH SEE ALSO\n"
         page += self.wikilink
         return page
 
@@ -99,8 +99,7 @@ def main():
         elif option in ('-r', '--raw'):
             raw = True
     term = options[-1][0]
-    app = WikiMan(term, raw)
-    print app.getManPage()
+    print WikiMan(term, raw).getManPage()
 
 if __name__ == "__main__":
     main()

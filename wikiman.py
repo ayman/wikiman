@@ -6,7 +6,7 @@ Fetch Wikipages on Unix commands like man pages like:
 
 class WikiMan:
     '''Get a term, query it from the wikipedia, and nroff it.'''
-    def __init__(self, term, raw = False): 
+    def __init__(self, term, raw = False):
         self.term = term
         self.raw = raw
         query = self.makeQuery(self.term, self.raw)
@@ -59,12 +59,12 @@ class WikiMan:
                   '\'\'\'' : '"',
                   '<!--' : '',
                   '-->' : '',
-                  '&mdash;' : '::' }        
+                  '&mdash;' : '::' }
         for k, v in codes.iteritems():
             content = content.replace(k, v)
         ## todo: regex {{*}}
         content = content.replace('{{lowercase}}', '')
-        ## lazy upcase 
+        ## lazy upcase
         content = content.replace('.SH Examples', '.SH EXAMPLES')
         content = content.replace('.SH Syntax', '.SH SYNTAX')
         return content

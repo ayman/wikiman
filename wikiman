@@ -1,0 +1,1 @@
+python wikiman.py $1 | nroff -man | less

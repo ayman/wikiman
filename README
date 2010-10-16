@@ -2,7 +2,17 @@ Grab a wikipedia page and display it as a manpage.  This app currently adds "_(U
 
 % python wikiman.py ls | nroff -man | less
 
-You will need python 2.6 for the JSON to work
+or you can use the shell script:
+
+% chmod 755 wikiman
+% ./wikiman cut
+
+if you are adventurous, you can issue the call to fetch raw/non-unix pages:
+
+% python wikiman.py -r macintosh | nroff -man | less 
+% python wikiman.py --raw macintosh | nroff -man | less 
+
+You will need python 2.6 for the JSON call to work.
 
 David A. Shamma
 M. Cameron Jones
